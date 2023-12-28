@@ -1,0 +1,62 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat bot</title>
+</head>
+<body>
+    <form id="chat-form">
+        <input type="text" id="text-input">
+        <button>submit</button>
+    </form>
+    <div id="chat-container"></div>
+    <script type="module">
+        import { io } from "https://cdn.socket.io/4.7.2/socket.io.esm.min.js";
+        var textInput = document.getElementById("text-input");
+        var form = document.getElementById('chat-form')
+        var chatContainer = document.getElementById('chat-container')
+        let q
+        var socket =  io('ws://localhost:3000')
+        socket.on('message',(data)=>{
+            console.log(data)
+        }) 
+        socket.on('new-question',(data)=>{
+            q = data
+            renderQuestion(data)
+        }) 
+        form.addEventListener('submit',(e)=>{
+            e.preventDefault()
+            renderAnswer(textInput.value)
+            postMessage(textInput.value)
+            textInput.value = ''
+        })
+
+        function postMessage(msg){
+            
+            socket.emit('new-message',{
+                q,a:msg
+            })
+        }
+
+        function renderQuestion(quest){
+            var elem = document.createElement('div')
+            elem.innerHTML = `
+                <div>
+                    <p>${quest}</p>
+                </div>
+            `
+            chatContainer.appendChild(elem)
+        }
+        function renderAnswer(ans){
+            var elem = document.createElement('div')
+            elem.innerHTML = `
+                <div>
+                    <p>${ans}</p>
+                </div>
+            `
+            chatContainer.appendChild(elem)
+        }
+        
+    </script>
+</body>
+</html>
